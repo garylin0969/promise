@@ -1,12 +1,26 @@
 import { useForm } from 'react-hook-form';
 
-const createPromise = <DataType extends {}>(data: DataType): Promise<DataType> => {
-    return new Promise((resolve, reject) => {
-        resolve(data);
-    });
-};
-
 function App() {
+    const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+    const fetchData = async () => {
+        console.log('fetchData started');
+        await delay(2000); // 延遲2秒
+        console.log('fetchData ended');
+        return 'data';
+    };
+
+    const processData = async () => {
+        console.log('processData started');
+        const data = await fetchData();
+        console.log(`Data: ${data}`);
+        console.log('processData ended');
+    };
+
+    console.log('Script started');
+    processData();
+    console.log('Script ended');
+
     const time1 = () => {
         return new Promise<void>((resolve, reject) => {
             setTimeout(() => {
@@ -41,23 +55,39 @@ function App() {
     const { register, handleSubmit } = useForm();
     const { register: otherRegister, handleSubmit: otherHandleSubmit } = useForm();
 
-    const oneSubmit = (data: any) => {
-        return data;
-    };
+    const promise = new Promise((resolve, reject) => {
+        try {
+            fetch('https://random-word-api.herokuapp.com/word')
+                .then((res) => res.json())
+                .then((res) => resolve(res[0]));
+        } catch (err) {
+            reject(err);
+        }
+    });
 
-    const twoSubmit = (data: any) => {
-        return data;
+    const myAge = (year: number) => {
+        return new Promise((resolve, reject) => {
+            const currentYear = new Date().getFullYear();
+            const age = currentYear - year;
+            resolve(age);
+        });
     };
 
     const submit = async () => {
         let oneData: any;
         let twoData: any;
-        const [one, two] = await Promise.all([
+        await Promise.all([
             handleSubmit((data) => (oneData = data))(),
             otherHandleSubmit((data) => (twoData = data))(),
         ]);
         console.log(oneData);
         console.log(twoData);
+        promise
+            .then((data) => {
+                console.log(data);
+            })
+            .catch((error) => console.log(error));
+        const garyAge = await myAge(1997);
     };
 
     return (
